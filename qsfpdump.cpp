@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdint.h>
+#include <cmath>
 
 float conv(uint8_t *data, uint16_t div, uint8_t sig)
 {
@@ -30,7 +31,6 @@ void print_part(uint8_t *data, const char *ptype, const char *prefix, int start,
 	}
 	printf("\n");
 }
-
 
 
 bool load_eeprom(int fd, uint8_t offset, unsigned to_read, uint8_t *data)
@@ -90,10 +90,10 @@ int main(int argc, char *argv[])
 		printf("Typ=0x%02X\n", data[0]);
 		printf("Connector=0x%02X\n", data[2]);
 		printf("Bitrate=%u\n", data[12]*100); //MBd
-		printf("Wavelength=%u\n", data[60] * 256 + data[61]); //nm
+		printf("Wavelength=%u\n", ((data[60]<<8)|data[61])/2); //nm
 		
 	}
-#if 0
+
 	//Diagnostic Monitoring Interface
 	{
 		int dev_addr = 0x50;
@@ -107,15 +107,70 @@ int main(int argc, char *argv[])
 		if(!ok){
 			return 1;
 		}
-		printf("Temperatur=%.2f\n", conv(&diag[96], 256, 1)); //C
-		printf("VCC=%.2f\n", conv(&diag[98], 10000, 0)); //V
-		printf("TXbias=%.2f\n", conv(&diag[100], 500, 0)); //mA
-		printf("TXpower=%.3f\n", conv(&diag[102], 10000, 0)); //mW
-		printf("RXpower=%d\n", (int)(conv(&diag[104], 10000, 0)*1000.0)); //mW
-		printf("LaserTemp=%.2f\n", conv(&diag[106], 256, 1)); //C
-		printf("TEC=%5.2f\n", conv(&diag[108], 10, 1)); // mA
+
+		uint16_t rx_power, tx_power, rx_power_sum, tx_power_sum;
+		uint8_t rx_reg_start = 34;
+		uint8_t tx_reg_start = 50;
+		float rx_dbm, tx_dbm, tx_dbm_sum, rx_dbm_sum;
+		uint8_t offset = 0;
+		printf("\n Channel Monitors \n");
+
+		rx_power_sum = 0; tx_power_sum = 0;
+		for ( uint8_t i = 0; i < 4; i++) 
+		{
+			rx_power = (diag[rx_reg_start + offset]<<8)|diag[rx_reg_start + offset + 1];
+			tx_power = (diag[tx_reg_start + offset]<<8)|diag[tx_reg_start + offset + 1];
+			rx_power_sum += rx_power;
+			tx_power_sum += tx_power;
+	                rx_dbm=10*std::log10((float)rx_power/10000);
+			tx_dbm=10*std::log10((float)tx_power/10000);
+	                
+			printf("Rx%d Power: %d. Dbm: %f", i, rx_power, rx_dbm);
+	                if(rx_dbm < -6) 
+				printf(" ERROR\n");
+			else if (rx_dbm < -3)
+				printf(" ATTENTION\n");
+			else
+				printf(" OK\n");
+		
+			printf("Tx%d Power: %d. Dbm: %f", i, tx_power, tx_dbm);
+                        if(tx_dbm < -6) 
+                                printf(" ERROR\n");
+                        else if (tx_dbm < -3) 
+                                printf(" ATTENTION\n");
+                        else
+                                printf(" OK\n"); 
+			offset += 2;
+		}
+                rx_dbm_sum=10*std::log10((float)rx_power_sum/10000);
+                tx_dbm_sum=10*std::log10((float)tx_power_sum/10000);
+		
+		printf("SUM Rx Power: %d. Dbm: %f", rx_power_sum, rx_dbm_sum);
+                if(rx_dbm_sum < -6) 
+	                printf(" ERROR\n");
+                else if (rx_dbm_sum < 2) 
+                        printf(" ATTENTION\n");
+                else
+                        printf(" OK\n");
+                       
+
+		printf("SUM Tx Power: %d. Dbm: %f", tx_power_sum, tx_dbm_sum);
+                if(tx_dbm_sum < -6) 
+                        printf(" ERROR\n");
+                else if (tx_dbm_sum < 4) 
+                        printf(" ATTENTION\n");
+                else
+                        printf(" OK\n");
+
+//		printf("Temperatur=%.2f\n", conv(&diag[96], 256, 1)); //C
+//		printf("VCC=%.2f\n", conv(&diag[98], 10000, 0)); //V
+//		printf("TXbias=%.2f\n", conv(&diag[100], 500, 0)); //mA
+//		printf("TXpower=%.3f\n", conv(&diag[102], 10000, 0)); //mW
+//		printf("RXpower=%d\n", (int)(conv(&diag[104], 10000, 0)*1000.0)); //mW
+//		printf("LaserTemp=%.2f\n", conv(&diag[106], 256, 1)); //C
+//		printf("TEC=%5.2f\n", conv(&diag[108], 10, 1)); // mA
 	}
-#endif
+
 	close(fd);
 	return 0;
 }
