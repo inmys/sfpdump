@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 		}
 		print_part(&data[0], "%c",   "Hersteller", 20, 16);
 		print_part(&data[0], "%02X", "OUI", 37, 3);
-		print_part(&data[0], "%c",   "Rev", 56, 4);
+		//print_part(&data[0], "%c",   "Rev", 56, 4);
 		print_part(&data[0], "%c",   "PN", 40, 16);
 		print_part(&data[0], "%c",   "SN", 68, 16);
 		print_part(&data[0], "%c",   "DC", 84,  6);
