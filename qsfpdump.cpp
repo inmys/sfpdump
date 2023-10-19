@@ -15,6 +15,11 @@
 #include <stdint.h>
 #include <cmath>
 
+
+const char* Red="\033[0;31m";
+const char* NoColor="\033[0m";
+const char* Yellow="\033[0;33m";
+
 float conv(uint8_t *data, uint16_t div, uint8_t sig)
 {
 	if (sig){
@@ -127,17 +132,17 @@ int main(int argc, char *argv[])
 	                
 			printf("Rx%d Power: %d. Dbm: %f", i, rx_power, rx_dbm);
 	                if(rx_dbm < -6) 
-				printf(" ERROR\n");
+	                	printf(" %sERROR%s \n", Red, NoColor);
 			else if (rx_dbm < -3)
-				printf(" ATTENTION\n");
+				printf(" %sATTENTION%s\n", Yellow, NoColor);
 			else
 				printf(" OK\n");
 		
 			printf("Tx%d Power: %d. Dbm: %f", i, tx_power, tx_dbm);
                         if(tx_dbm < -6) 
-                                printf(" ERROR\n");
+                                printf(" %sERROR%s \n", Red, NoColor);
                         else if (tx_dbm < -3) 
-                                printf(" ATTENTION\n");
+				printf(" %sATTENTION%s\n", Yellow, NoColor);
                         else
                                 printf(" OK\n"); 
 			offset += 2;
@@ -147,18 +152,18 @@ int main(int argc, char *argv[])
 		
 		printf("SUM Rx Power: %d. Dbm: %f", rx_power_sum, rx_dbm_sum);
                 if(rx_dbm_sum < -6) 
-	                printf(" ERROR\n");
+	                printf(" %sERROR%s\n ", Red, NoColor);
                 else if (rx_dbm_sum < 2) 
-                        printf(" ATTENTION\n");
+			printf(" %sATTENTION%s\n", Yellow, NoColor);
                 else
                         printf(" OK\n");
                        
 
 		printf("SUM Tx Power: %d. Dbm: %f", tx_power_sum, tx_dbm_sum);
                 if(tx_dbm_sum < -6) 
-                        printf(" ERROR\n");
+	                printf(" %sERROR%s\n ", Red, NoColor);
                 else if (tx_dbm_sum < 4) 
-                        printf(" ATTENTION\n");
+			printf(" %sATTENTION%s\n", Yellow, NoColor);
                 else
                         printf(" OK\n");
 
