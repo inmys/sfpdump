@@ -167,8 +167,8 @@ int main(int argc, char *argv[])
                 else
                         printf(" OK\n");
 
-//		printf("Temperatur=%.2f\n", conv(&diag[96], 256, 1)); //C
-//		printf("VCC=%.2f\n", conv(&diag[98], 10000, 0)); //V
+		printf("Temperatur=%.2f\n", conv(&diag[22], 256, 1)); //C
+		printf("VCC=%.2f\n", conv(&diag[26], 10000, 0)); //V
 //		printf("TXbias=%.2f\n", conv(&diag[100], 500, 0)); //mA
 //		printf("TXpower=%.3f\n", conv(&diag[102], 10000, 0)); //mW
 //		printf("RXpower=%d\n", (int)(conv(&diag[104], 10000, 0)*1000.0)); //mW
